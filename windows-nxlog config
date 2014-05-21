@@ -39,6 +39,7 @@ LogFile %ROOT%\data\nxlog.log
     Module      om_tcp
     Host        <IP ADDRESS OF LOGSTASH LISTENER>
     Port        3515
+    OutputType  Binary
 </Output>
 
 <Route 1>
