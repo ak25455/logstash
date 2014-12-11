@@ -1,0 +1,95 @@
+filter {
+######## PALOALTO LOGS ###################################################
+    if [type] == "paloalto" and [message] =~ /TRAFFIC/ {
+         csv {
+             columns => [ "Domain", "ReceiveTime", "Serial", "classification", "ThreatContent Type", "Config Version", "Generate Time", "SourceIP", "DestinationIP", "NAT Source IP", "NAT Destination IP", "Rule", "Source User","Destination User","Application","Virtual System","Source Zone","Destination Zone","Inbound Interface","Outbound Interface","LogAction","Time Logged","Session ID","Repeat Count","SourcePort","DstPort","NAT Source Port","NAT Destination Port","Flags","protocol","Action","Bytes","Bytes Sent","Bytes Received","Packets","Start Time","Elapsed Time (sec)","Category","Padding","seqno","actionflags","Source Country","Destination Country","cpadding","pkts_sent","pkts_received" ]
+             
+			 remove_field => [ "Domain", "ReceiveTime", "Serial", "actionflags", "Config Version", "cpadding", "Flags", "Elapsed Time (sec)", "Inbound Interface", "Outbound Interface", "LogAction", "NAT Source IP", "NAT Destination IP", "SourcePort", "NAT Source Port","NAT Destination Port", "Padding", "seqno", "Session ID", "Source Port", "Time Logged", "Virtual System" ]
+             add_tag => [ "PA-traffic"]
+			add_field => ["SourceHost", "%{SourceIP}" ]
+        }
+
+        date {
+            match => [ "Generate time", "YYYY/MM/dd HH:mm:ss" ]
+        }
+
+    }
+    else if [type] == "paloalto" and [message] !~ /TRAFFIC/ {
+        csv {
+             columns => [ "Domain", "ReceiveTime", "Serial", "classification", "ThreatContent Type", "Config Version", "Generate Time", "SourceIP", "DestinationIP", "NAT Source IP", "NAT Destination IP", "Rule", "Source User","Destination User","Application","Virtual System","Source Zone","Destination Zone","Inbound Interface","Outbound Interface","LogAction","Time Logged","Session ID","Repeat Count","SourcePort","DstPort","NAT Source Port","NAT Destination Port","Flags","protocol","Action", "URL","Threat/Content Name","Category","Severity","Direction","seqno","actionflags","Source Country","Destination Country","cpadding","contenttype" ]
+             remove_field => [ "Domain", "ReceiveTime", "actionflags", "Config Version", "Flags", "Inbound Interface", "Outbound Interface", "LogAction", "SourcePort", "NAT Source IP", "NAT Destination IP","NAT Source Port","NAT Destination Port", "Padding", "Direction", "seqno", "Serial", "Session ID", "Source Port", "Time Logged", "Virtual System",  "cpadding","content type", "message" ]
+             add_tag => [ "PA-nontraffic" ]
+			 add_field => ["SourceHost", "%{SourceIP}" ]
+        }
+
+        date {
+            match => [ "Generate time", "YYYY/MM/dd HH:mm:ss" ]
+        }
+    }
+# MARK Line 98 
+   if [type] == "paloalto" {
+                cidr {
+                        address => [ "%{SourceIP}"]
+                        network => [ "10.160.0.0/16" ]
+                        add_field => [ "Location", "Chantilly Workstation"]
+               }
+		dns {
+			reverse   => [ "SourceHost" ]
+			action      => "replace"
+		}
+                grok {
+                       match => [ "SourceHost", "%{WORD:Dept}-%{GREEDYDATA}" ]
+                     }
+                grok {
+                       match => [ "SourceHost", "%{DATA:Abbrhost}\.%{GREEDYDATA}" ]
+                     }
+
+		mutate {
+                       replace => [ "SourceHost", "%{Abbrhost}" ]
+                       remove_field => [ "Abbrhost" ]
+		}
+                translate {
+                       field => "Dept"
+                       destination => "Department"
+		       regex => "true"
+                       dictionary_path => "/etc/logstash/dictionary/department.yaml"
+                       remove_field => "Dept"
+                } 
+                mutate {
+                        convert => [ "Bytes", "integer" ]
+                        convert => [ "Bytes Received", "integer" ]
+                        convert => [ "Bytes Sent", "integer" ]
+                        convert => [ "Repeat Count", "integer" ]
+                }     
+                grok {
+                       match => ["Source User", "%{WORD}\\%{WORD:UserName}" ]
+                }
+		translate {
+			field => "SourceIP"
+			destination => "Location"
+			regex => "true"
+			dictionary => [ 
+					"10\.16*", "Chantilly",
+					"10\.48*", "AltaVista",
+					"10\.49*", "RioRancho",
+					"10\.50*", "IISI",
+					"10\.64*", "Production Servers",
+					"10\.96*", "Terminal Servers",
+					"10\.128*", "Corporate Servers"
+			]
+		}
+	}
+ if [SourceIP]  {
+    geoip {
+      source => "SourceIP"
+      target => "geoip"
+      database => "/opt/logstash/vendor/geoip/GeoLiteCity.dat"
+      add_field => [ "[geoip][coordinates]", "%{[geoip][longitude]}" ]
+      add_field => [ "[geoip][coordinates]", "%{[geoip][latitude]}"  ]
+    }
+    mutate {
+      convert => [ "[geoip][coordinates]", "float" ]
+    }
+
+  }
+}

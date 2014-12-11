@@ -1,0 +1,28 @@
+filter {
+  if [type] == "ossec-json" {
+      grok {
+         match => { "message" => "<%{POSINT:syslog_pri}>%{SYSLOGTIMESTAMP:syslog_timestamp} %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}(?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:syslog_message}" }
+      add_field => [ "received_at", "%{@timestamp}" ]
+      add_field => [ "received_from", "%{host}" ]
+    }
+    syslog_pri { }
+    date {
+      match => [ "syslog_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
+    }
+
+     json {
+         source => "syslog_message"
+         add_tag => "ossec-json"
+     }
+     mutate {
+        remove_field => [ "syslog_message", "message"]
+        rename       => [ "description", "Description" ]
+        rename       => [ "crit", "Severity" ]
+        rename       => [ "acct", "UserName" ]
+        rename       => [ "id", "EventID" ]
+        rename       => [ "src_ip", "SourceIP" ]
+        convert => [ "EventID", "string" ]
+
+     }
+  } 
+}
