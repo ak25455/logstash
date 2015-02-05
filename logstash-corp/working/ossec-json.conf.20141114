@@ -14,16 +14,8 @@ filter {
          source => "syslog_message"
          add_tag => "ossec-json"
      }
-
-     grok {
-         match => [ "component", "\(%{DATA:HostName}\) %{IP:SourceIP}-%{GREEDYDATA}" ]
-     }
-
-
      mutate {
-        remove_field => [ "syslog_message" ]
-        remove_field => [ "syslog_facility", "syslog_facility_code", "syslog_pri", "syslog_severity", "syslog_severity_code" ]
-
+        remove_field => [ "syslog_message", "message"]
         rename       => [ "description", "Description" ]
         rename       => [ "crit", "Severity" ]
         rename       => [ "acct", "UserName" ]
