@@ -1,0 +1,65 @@
+# Installing Graphite on Debian
+# Install dependencies
+apt-get install python-pip
+apt-get install python-cairo
+apt-get install python-django
+apt-get install python-django-tagging
+apt-get install python-twisted
+apt-get install python-zope.interface
+apt-get install python-tz
+apt-get install apache2
+apt-get install libapache2-mod-wsgi
+# Install graphite
+pip install https://github.com/graphite-project/ceres/tarball/master
+pip install whisper
+pip install carbon
+pip install graphite-web
+
+# Configuration
+
+cd /opt/graphite/conf
+
+cp graphite.wsgi.example graphite.wsgi
+cp carbon.conf.example carbon.conf
+cp storage-schemas.conf.example storage-schemas.conf
+cp dashboard.conf.example dashboard.conf
+cd ..
+chmod -R 777 storage
+
+cd /opt/graphite/webapp/graphite
+cp local_settings.py.example local_settings.py
+vi local_settings.py
+TIME_ZONE = 'America/New_York'
+LOG_RENDERING_PERFORMANCE = True
+LOG_CACHE_PERFORMANCE = True
+LOG_METRIC_ACCESS = True
+
+python manage.py syncdb
+cd ../../storage
+chmod 777 graphite.db
+
+cd ../example
+cp example-graphite-vhost.conf /etc/apache2/sites-available/graphite
+ vi /etc/apache2/sites-available/graphite
+	Modify to WSGISocketPrefix /var/run/apache2/wsgi
+
+a2dissite default
+a2ensite graphite
+
+service apache2 reload
+
+python /opt/graphite/bin/carbon-cache.py start
+
+ netstat -anp|grep 2003
+ 
+ # Verify it is running
+ 
+ 
+ # Send some text to graphite
+ 
+ echo "carbon.installation.test $RANDOM `date +%s`" | nc -w 1 localhost 2003
+ 
+ 
+ http://graphitehost
+ 
+ 
