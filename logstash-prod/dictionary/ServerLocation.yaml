@@ -1,0 +1,7 @@
+/10\.1.*/ : Layer 1 Web Servers
+/10\.2.*/ : Layer 2 App Servers
+/10\.3.*/ : Layer 3 App Servers
+/10.\64\.*/: Production Servers
+/10.\96\.*/: Production Utility Servers
+/10\.128\.*/: Corporate Servers
+

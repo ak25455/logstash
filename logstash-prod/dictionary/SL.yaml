@@ -1,0 +1,15 @@
+/10\.1.*/ : Layer 1 Web Servers
+/10\.2.*/ : Layer 2 App Servers
+
+
+A"10\.1.*": Layer 1 Web Servers
+"10\.2.*": Layer 2 App Servers
+"10\.3.*": Layer 3 DB Servers
+"10\.16*": Chantilly
+"10\.49*": RioRancho
+"10\.50*": IISI
+"10\.64*": Production Servers
+"10\.96*": Terminal Servers
+"10\.128*":Corporate Servers
+"69\.25\.35*": Website
+
