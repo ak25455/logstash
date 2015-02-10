@@ -15,5 +15,49 @@
        }
    }
    
-   
+# INPUT: 10.161.2.75
+ 
+# OUTPUT: 
+ 
+#{
+#       "message" => "10.161.2.75",
+#      "@version" => "1",
+#    "@timestamp" => "2015-02-10T16:21:42.856Z",
+#          "host" => "chis-logstash01",
+#          "path" => "/home/logstash/test.log",
+#      "SourceIP" => "10.1.2.7",
+#    "SourceHost" => "localdns.corporate.com"
+#}
+
+#INPUT: 65.92.80.123
+
+#OUTPUT: 
+
+#{
+#       "message" => "65.92.80.123",
+#      "@version" => "1",
+#    "@timestamp" => "2015-02-10T16:22:05.873Z",
+#          "host" => "chis-logstash01",
+#          "path" => "/home/logstash/test.log",
+#      "SourceIP" => "65.92.80.123",
+#         "geoip" => {
+#                      "ip" => "65.92.80.123",
+#           "country_code2" => "CA",
+#           "country_code3" => "CAN",
+#            "country_name" => "Canada",
+#          "continent_code" => "NA",
+#             "region_name" => "QC",
+#               "city_name" => "Victoriaville",
+#                "latitude" => 46.05000000000001,
+#               "longitude" => -71.9667,
+#                "timezone" => "America/Montreal",
+#        "real_region_name" => "Quebec",
+#                "location" => [
+#            [0] -71.9667,
+#            [1] 46.05000000000001
+#        ]
+#    }
+#}
+
+  
  
